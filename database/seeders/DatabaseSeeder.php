@@ -121,6 +121,148 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        // Các phần seed khác tương tự...
+
+
+        // Seed PhieuThu
+        foreach ($hoaDonIds as $hoaDonId) {
+            DB::table('PhieuThu')->insert([
+                'MaHoaDon' => $hoaDonId,
+                'NgayLap' => $faker->dateTimeBetween('-1 year', 'now'),
+                'NguoiLap' => $faker->randomElement($nhanVienIds),
+                'SoTien' => $faker->numberBetween(50000, 5000000)
+            ]);
+        }
+
+        // Seed PhieuNhap
+        for ($i = 1; $i <= 200; $i++) {
+            $maThuoc = $faker->randomElement($thuocIds);
+            $thuoc = DB::table('Thuoc')->where('MaThuoc', $maThuoc)->first();
+
+            DB::table('PhieuNhap')->insert([
+                'NgayNhap' => $faker->dateTimeBetween('-1 year', 'now'),
+                'MaThuoc' => $maThuoc,
+                'TenThuoc' => $thuoc->TenThuoc,
+                'SoLuong' => $faker->numberBetween(100, 1000),
+                'MaNhaCungCap' => $faker->randomElement($nhaCungCapIds)
+            ]);
+        }
+
+        // Seed BangLuong
+        $bangLuongIds = [];
+        foreach ($nhanVienIds as $nhanVienId) {
+            // 6 tháng lương cho mỗi nhân viên
+            for ($i = 1; $i <= 6; $i++) {
+                $luongCoBan = $faker->numberBetween(5000000, 10000000);
+                $thuongChuyenCan = $faker->numberBetween(500000, 2000000);
+                $thuongKPI = $faker->numberBetween(1000000, 5000000);
+                $soNgayNghi = $faker->numberBetween(0, 5);
+                $tongLuong = $luongCoBan + $thuongChuyenCan + $thuongKPI - ($soNgayNghi * 200000); // Trừ 200k mỗi ngày nghỉ
+
+                $bangLuongIds[] = DB::table('BangLuong')->insertGetId([
+                    'MaNhanVien' => $nhanVienId,
+                    'Thang' => $faker->dateTimeBetween('-6 months', 'now'),
+                    'LuongCoBan' => $luongCoBan,
+                    'ThuongChuyenCan' => $thuongChuyenCan,
+                    'ThuongKPI' => $thuongKPI,
+                    'SoNgayNghi' => $soNgayNghi,
+                    'TongLuong' => $tongLuong
+                ]);
+            }
+        }
+
+        // Seed ChiTietLuong
+        $loaiPhuCap = [
+            'Phụ cấp ăn trưa' => [150000, 300000],
+            'Phụ cấp xăng xe' => [200000, 500000],
+            'Phụ cấp điện thoại' => [100000, 200000],
+            'Thưởng doanh số' => [500000, 2000000],
+            'Phụ cấp độc hại' => [300000, 800000],
+            'Phụ cấp trách nhiệm' => [400000, 1000000]
+        ];
+
+        foreach ($bangLuongIds as $bangLuongId) {
+            // 2-4 loại phụ cấp cho mỗi bảng lương
+            $selectedPhuCap = $faker->randomElements(array_keys($loaiPhuCap), $faker->numberBetween(2, 4));
+
+            foreach ($selectedPhuCap as $loai) {
+                [$min, $max] = $loaiPhuCap[$loai];
+                DB::table('ChiTietLuong')->insert([
+                    'MaBangLuong' => $bangLuongId,
+                    'MoTa' => $loai,
+                    'SoTien' => $faker->numberBetween($min, $max)
+                ]);
+            }
+        }// Continue from previous code...
+
+        // Seed PhieuThu
+        foreach ($hoaDonIds as $hoaDonId) {
+            DB::table('PhieuThu')->insert([
+                'MaHoaDon' => $hoaDonId,
+                'NgayLap' => $faker->dateTimeBetween('-1 year', 'now'),
+                'NguoiLap' => $faker->randomElement($nhanVienIds),
+                'SoTien' => $faker->numberBetween(50000, 5000000)
+            ]);
+        }
+
+        // Seed PhieuNhap
+        for ($i = 1; $i <= 200; $i++) {
+            $maThuoc = $faker->randomElement($thuocIds);
+            $thuoc = DB::table('Thuoc')->where('MaThuoc', $maThuoc)->first();
+
+            DB::table('PhieuNhap')->insert([
+                'NgayNhap' => $faker->dateTimeBetween('-1 year', 'now'),
+                'MaThuoc' => $maThuoc,
+                'TenThuoc' => $thuoc->TenThuoc,
+                'SoLuong' => $faker->numberBetween(100, 1000),
+                'MaNhaCungCap' => $faker->randomElement($nhaCungCapIds)
+            ]);
+        }
+
+        // Seed BangLuong
+        $bangLuongIds = [];
+        foreach ($nhanVienIds as $nhanVienId) {
+            // 6 tháng lương cho mỗi nhân viên
+            for ($i = 1; $i <= 6; $i++) {
+                $luongCoBan = $faker->numberBetween(5000000, 10000000);
+                $thuongChuyenCan = $faker->numberBetween(500000, 2000000);
+                $thuongKPI = $faker->numberBetween(1000000, 5000000);
+                $soNgayNghi = $faker->numberBetween(0, 5);
+                $tongLuong = $luongCoBan + $thuongChuyenCan + $thuongKPI - ($soNgayNghi * 200000); // Trừ 200k mỗi ngày nghỉ
+
+                $bangLuongIds[] = DB::table('BangLuong')->insertGetId([
+                    'MaNhanVien' => $nhanVienId,
+                    'Thang' => $faker->dateTimeBetween('-6 months', 'now'),
+                    'LuongCoBan' => $luongCoBan,
+                    'ThuongChuyenCan' => $thuongChuyenCan,
+                    'ThuongKPI' => $thuongKPI,
+                    'SoNgayNghi' => $soNgayNghi,
+                    'TongLuong' => $tongLuong
+                ]);
+            }
+        }
+
+        // Seed ChiTietLuong
+        $loaiPhuCap = [
+            'Phụ cấp ăn trưa' => [150000, 300000],
+            'Phụ cấp xăng xe' => [200000, 500000],
+            'Phụ cấp điện thoại' => [100000, 200000],
+            'Thưởng doanh số' => [500000, 2000000],
+            'Phụ cấp độc hại' => [300000, 800000],
+            'Phụ cấp trách nhiệm' => [400000, 1000000]
+        ];
+
+        foreach ($bangLuongIds as $bangLuongId) {
+            // 2-4 loại phụ cấp cho mỗi bảng lương
+            $selectedPhuCap = $faker->randomElements(array_keys($loaiPhuCap), $faker->numberBetween(2, 4));
+
+            foreach ($selectedPhuCap as $loai) {
+                [$min, $max] = $loaiPhuCap[$loai];
+                DB::table('ChiTietLuong')->insert([
+                    'MaBangLuong' => $bangLuongId,
+                    'MoTa' => $loai,
+                    'SoTien' => $faker->numberBetween($min, $max)
+                ]);
+            }
+        }
     }
 }
