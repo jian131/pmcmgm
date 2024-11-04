@@ -71,7 +71,7 @@ The system includes the following key tables:
 1. Clone the repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/jian131/pharmacymanagement
 ```
 
 2. Install dependencies
