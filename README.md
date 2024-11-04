@@ -117,7 +117,3 @@ For support, please contact :
 
 -   Email: [dawndawn335@gmail.com](mailto:dawndawn335@gmail.com)
 -   Facebook: [Facebook](https://fb.me/j1an3)
-
-```
-
-```
