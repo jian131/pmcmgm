@@ -71,11 +71,7 @@ The system includes the following key tables:
 1. Clone the repository
 
 ```bash
-<<<<<<< Updated upstream
 git clone https://github.com/jian131/pharmacymanagement
-=======
-git clone <repository-url>
->>>>>>> Stashed changes
 ```
 
 2. Install dependencies
@@ -117,15 +113,10 @@ npm run dev
 This project is licensed under the MIT License.
 
 ## Support
-
-<<<<<<< Updated upstream
-For support, please contact [contact information].
-=======
 For support, please contact :
 
 -   Email: [dawndawn335@gmail.com](mailto:dawndawn335@gmail.com)
 -   Facebook: [Facebook](https://fb.me/j1an3)
->>>>>>> Stashed changes
 
 ```
 
