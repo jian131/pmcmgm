@@ -2,63 +2,68 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\NhanVien;
 use Illuminate\Http\Request;
 
 class NhanVienController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    public function __construct()
+    {
+        $this->middleware(['auth', 'role:quản lý']);
+    }
+
     public function index()
     {
-        //
+        $nhanVien = NhanVien::all();
+        return view('nhanvien.index', compact('nhanVien'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
+        return view('nhanvien.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'HoTen' => 'required|string|max:100',
+            'NgaySinh' => 'nullable|date',
+            'DiaChi' => 'nullable|string|max:255',
+            'SoDienThoai' => 'nullable|string|max:15',
+        ]);
+
+        NhanVien::create($request->all());
+
+        return redirect()->route('nhanvien.index')->with('success', 'Thêm nhân viên thành công.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function show(NhanVien $nhanVien)
     {
-        //
+        return view('nhanvien.show', compact('nhanVien'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function edit(NhanVien $nhanVien)
     {
-        //
+        return view('nhanvien.edit', compact('nhanVien'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function update(Request $request, NhanVien $nhanVien)
     {
-        //
+        $request->validate([
+            'HoTen' => 'required|string|max:100',
+            'NgaySinh' => 'nullable|date',
+            'DiaChi' => 'nullable|string|max:255',
+            'SoDienThoai' => 'nullable|string|max:15',
+        ]);
+
+        $nhanVien->update($request->all());
+
+        return redirect()->route('nhanvien.index')->with('success', 'Cập nhật nhân viên thành công.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(NhanVien $nhanVien)
     {
-        //
+        $nhanVien->delete();
+        return redirect()->route('nhanvien.index')->with('success', 'Xóa nhân viên thành công.');
     }
 }

@@ -2,63 +2,66 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\KhachHang;
 use Illuminate\Http\Request;
 
 class KhachHangController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    public function __construct()
+    {
+        $this->middleware(['auth', 'role:quản lý']);
+    }
+
     public function index()
     {
-        //
+        $khachHang = KhachHang::all();
+        return view('khachhang.index', compact('khachHang'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
+        return view('khachhang.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'TenKhachHang' => 'required|string|max:100',
+            'SoDienThoai' => 'nullable|string|max:15',
+            'DiaChi' => 'nullable|string|max:255',
+        ]);
+
+        KhachHang::create($request->all());
+
+        return redirect()->route('khachhang.index')->with('success', 'Thêm khách hàng thành công.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function show(KhachHang $khachHang)
     {
-        //
+        return view('khachhang.show', compact('khachHang'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function edit(KhachHang $khachHang)
     {
-        //
+        return view('khachhang.edit', compact('khachHang'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function update(Request $request, KhachHang $khachHang)
     {
-        //
+        $request->validate([
+            'TenKhachHang' => 'required|string|max:100',
+            'SoDienThoai' => 'nullable|string|max:15',
+            'DiaChi' => 'nullable|string|max:255',
+        ]);
+
+        $khachHang->update($request->all());
+
+        return redirect()->route('khachhang.index')->with('success', 'Cập nhật khách hàng thành công.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(KhachHang $khachHang)
     {
-        //
+        $khachHang->delete();
+        return redirect()->route('khachhang.index')->with('success', 'Xóa khách hàng thành công.');
     }
 }
