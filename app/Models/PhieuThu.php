@@ -24,9 +24,4 @@ class PhieuThu extends Model
     {
         return $this->belongsTo(HoaDon::class, 'MaHoaDon');
     }
-
-    public function khachHang()
-    {
-        return $this->belongsTo(KhachHang::class, 'MaKhachHang');
-    }
 }

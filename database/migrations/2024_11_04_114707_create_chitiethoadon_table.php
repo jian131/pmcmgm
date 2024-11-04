@@ -16,6 +16,7 @@ class CreateChitiethoadonTable extends Migration
             $table->primary(['MaHoaDon', 'MaThuoc']);
             $table->foreign('MaHoaDon')->references('MaHoaDon')->on('HoaDon')->onDelete('cascade');
             $table->foreign('MaThuoc')->references('MaThuoc')->on('Thuoc')->onDelete('cascade');
+            $table->timestamps();
         });
     }
 

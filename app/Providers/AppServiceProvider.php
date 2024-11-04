@@ -16,7 +16,7 @@ class AuthServiceProvider extends ServiceProvider
      */
     protected $policies = [
         Thuoc::class => ThuocPolicy::class,
-        // Đăng ký các policy khác ở đây
+        // Register other policies here
     ];
 
     public function boot()

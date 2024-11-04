@@ -4,15 +4,14 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 
 class RoleSeeder extends Seeder
 {
     public function run()
     {
-        $roles = ['quản lý', 'nhân viên'];
-
-        foreach ($roles as $role) {
-            Role::firstOrCreate(['name' => $role, 'guard_name' => 'web']);
-        }
+        // Create roles
+        Role::create(['name' => 'quản lý']);
+        Role::create(['name' => 'nhân viên']);
     }
 }

@@ -10,10 +10,11 @@ class CreateNhanvienTable extends Migration
     {
         Schema::create('NhanVien', function (Blueprint $table) {
             $table->id('MaNhanVien');
-            $table->string('HoTen', 100);
-            $table->date('NgaySinh')->nullable();
-            $table->string('DiaChi', 255)->nullable();
-            $table->string('SoDienThoai', 15)->nullable();
+            $table->string('HoTen');
+            $table->date('NgaySinh');
+            $table->string('DiaChi');
+            $table->string('SoDienThoai')->unique();
+            $table->timestamps(); // Ensure timestamps are included
         });
     }
 

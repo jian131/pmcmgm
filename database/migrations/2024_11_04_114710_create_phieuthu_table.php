@@ -15,6 +15,7 @@ class CreatePhieuthuTable extends Migration
             $table->string('NguoiLap', 100)->nullable();
             $table->decimal('SoTien', 10, 2);
             $table->foreign('MaHoaDon')->references('MaHoaDon')->on('HoaDon')->onDelete('cascade');
+            $table->timestamps();
         });
     }
 

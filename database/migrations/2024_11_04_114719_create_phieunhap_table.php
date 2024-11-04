@@ -17,6 +17,7 @@ class CreatePhieunhapTable extends Migration
             $table->unsignedBigInteger('MaNhaCungCap');
             $table->foreign('MaThuoc')->references('MaThuoc')->on('Thuoc')->onDelete('cascade');
             $table->foreign('MaNhaCungCap')->references('MaNhaCungCap')->on('NhaCungCap')->onDelete('cascade');
+            $table->timestamps();
         });
     }
 

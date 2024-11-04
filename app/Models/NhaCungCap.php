@@ -19,7 +19,7 @@ class NhaCungCap extends Model
         'SoDienThoai',
     ];
 
-    public function phieuNhap()
+    public function phieuNhaps()
     {
         return $this->hasMany(PhieuNhap::class, 'MaNhaCungCap');
     }

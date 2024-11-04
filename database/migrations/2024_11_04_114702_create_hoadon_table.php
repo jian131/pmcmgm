@@ -15,6 +15,7 @@ class CreateHoaDonTable extends Migration
             $table->unsignedBigInteger('MaNhanVien')->nullable();
             $table->foreign('MaKhachHang')->references('MaKhachHang')->on('KhachHang')->onDelete('cascade');
             $table->foreign('MaNhanVien')->references('MaNhanVien')->on('NhanVien')->onDelete('cascade');
+            $table->timestamps();
         });
     }
 

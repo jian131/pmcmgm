@@ -14,6 +14,7 @@ class CreateChitietluongTable extends Migration
             $table->string('MoTa', 255)->nullable();
             $table->decimal('SoTien', 10, 2);
             $table->foreign('MaBangLuong')->references('MaBangLuong')->on('BangLuong')->onDelete('cascade');
+            $table->timestamps();
         });
     }
 

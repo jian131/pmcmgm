@@ -29,13 +29,13 @@ class HoaDon extends Model
         return $this->belongsTo(NhanVien::class, 'MaNhanVien');
     }
 
-    public function chiTietHoaDon()
+    public function chiTietHoaDons()
     {
         return $this->hasMany(ChiTietHoaDon::class, 'MaHoaDon');
     }
 
     public function phieuThu()
     {
-        return $this->hasMany(PhieuThu::class, 'MaHoaDon');
+        return $this->hasOne(PhieuThu::class, 'MaHoaDon');
     }
 }

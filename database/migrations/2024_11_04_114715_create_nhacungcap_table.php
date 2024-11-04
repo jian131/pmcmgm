@@ -13,6 +13,7 @@ class CreateNhacungcapTable extends Migration
             $table->string('TenNhaCungCap', 100);
             $table->string('DiaChi', 255)->nullable();
             $table->string('SoDienThoai', 15)->nullable();
+            $table->timestamps();
         });
     }
 

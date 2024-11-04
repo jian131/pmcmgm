@@ -20,13 +20,8 @@ class KhachHang extends Model
         'DiemTichLuy',
     ];
 
-    public function hoaDon()
+    public function hoaDons()
     {
         return $this->hasMany(HoaDon::class, 'MaKhachHang');
-    }
-
-    public function phieuThu()
-    {
-        return $this->hasMany(PhieuThu::class, 'MaKhachHang');
     }
 }

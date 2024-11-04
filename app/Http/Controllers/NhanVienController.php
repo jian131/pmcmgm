@@ -7,15 +7,10 @@ use Illuminate\Http\Request;
 
 class NhanVienController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware(['auth', 'role:quản lý']);
-    }
-
     public function index()
     {
-        $nhanVien = NhanVien::all();
-        return view('nhanvien.index', compact('nhanVien'));
+        $nhanViens = NhanVien::all();
+        return view('nhanvien.index', compact('nhanViens'));
     }
 
     public function create()
@@ -26,15 +21,15 @@ class NhanVienController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'HoTen' => 'required|string|max:100',
-            'NgaySinh' => 'nullable|date',
-            'DiaChi' => 'nullable|string|max:255',
-            'SoDienThoai' => 'nullable|string|max:15',
+            'HoTen' => 'required|string|max:255',
+            'NgaySinh' => 'required|date',
+            'DiaChi' => 'required|string',
+            'SoDienThoai' => 'required|unique:NhanVien,SoDienThoai',
         ]);
 
         NhanVien::create($request->all());
 
-        return redirect()->route('nhanvien.index')->with('success', 'Thêm nhân viên thành công.');
+        return redirect()->route('nhanvien.index')->with('success', 'Nhân viên được tạo thành công.');
     }
 
     public function show(NhanVien $nhanVien)
@@ -50,20 +45,20 @@ class NhanVienController extends Controller
     public function update(Request $request, NhanVien $nhanVien)
     {
         $request->validate([
-            'HoTen' => 'required|string|max:100',
-            'NgaySinh' => 'nullable|date',
-            'DiaChi' => 'nullable|string|max:255',
-            'SoDienThoai' => 'nullable|string|max:15',
+            'HoTen' => 'required|string|max:255',
+            'NgaySinh' => 'required|date',
+            'DiaChi' => 'required|string',
+            'SoDienThoai' => 'required|unique:NhanVien,SoDienThoai,' . $nhanVien->MaNhanVien . ',MaNhanVien',
         ]);
 
         $nhanVien->update($request->all());
 
-        return redirect()->route('nhanvien.index')->with('success', 'Cập nhật nhân viên thành công.');
+        return redirect()->route('nhanvien.index')->with('success', 'Nhân viên được cập nhật thành công.');
     }
 
     public function destroy(NhanVien $nhanVien)
     {
         $nhanVien->delete();
-        return redirect()->route('nhanvien.index')->with('success', 'Xóa nhân viên thành công.');
+        return redirect()->route('nhanvien.index')->with('success', 'Nhân viên được xóa thành công.');
     }
 }

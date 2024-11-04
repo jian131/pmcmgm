@@ -14,20 +14,20 @@ class PhieuNhap extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'NgayNhap',
-        'MaThuoc',
-        'TenThuoc',
-        'SoLuong',
         'MaNhaCungCap',
+        'NgayNhap',
+        'MaNhanVien',
+        'SoLuong',
+        'TongTien',
     ];
-
-    public function thuoc()
-    {
-        return $this->belongsTo(Thuoc::class, 'MaThuoc');
-    }
 
     public function nhaCungCap()
     {
         return $this->belongsTo(NhaCungCap::class, 'MaNhaCungCap');
+    }
+
+    public function nhanVien()
+    {
+        return $this->belongsTo(NhanVien::class, 'MaNhanVien');
     }
 }

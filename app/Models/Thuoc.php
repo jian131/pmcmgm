@@ -22,13 +22,8 @@ class Thuoc extends Model
         'Gia',
     ];
 
-    public function chiTietHoaDon()
+    public function chiTietHoaDons()
     {
         return $this->hasMany(ChiTietHoaDon::class, 'MaThuoc');
-    }
-
-    public function phieuNhap()
-    {
-        return $this->hasMany(PhieuNhap::class, 'MaThuoc');
     }
 }

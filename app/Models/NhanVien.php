@@ -29,4 +29,8 @@ class NhanVien extends Model
     {
         return $this->hasMany(BangLuong::class, 'MaNhanVien');
     }
+    public function user()
+    {
+        return $this->hasOne(User::class, 'MaNhanVien');
+    }
 }

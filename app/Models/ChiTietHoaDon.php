@@ -10,10 +10,8 @@ class ChiTietHoaDon extends Model
     use HasFactory;
 
     protected $table = 'ChiTietHoaDon';
+    protected $primaryKey = 'id'; // Assuming there's an 'id' column
     public $timestamps = false;
-
-    protected $primaryKey = ['MaHoaDon', 'MaThuoc'];
-    public $incrementing = false;
 
     protected $fillable = [
         'MaHoaDon',

@@ -6,67 +6,111 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Faker\Factory as Faker;
 use Illuminate\Support\Facades\Hash;
+use Carbon\Carbon;
+use Spatie\Permission\Models\Role;
+use App\Models\User;
 
 class DatabaseSeeder extends Seeder
 {
     public function run()
     {
         $this->call([
-            RoleSeeder::class, // Chạy seeder vai trò trước
+            RoleSeeder::class,
+            PermissionSeeder::class, // Ensure you have a PermissionSeeder
         ]);
 
         $faker = Faker::create('vi_VN');
 
-        // Tạo một tài khoản admin mẫu
-        DB::table('users')->insert([
-            'name' => 'Admin',
-            'email' => 'admin@example.com',
-            'password' => Hash::make('password'),
-            'email_verified_at' => now(),
-        ]);
+        // Define the date range
+        $startDate = Carbon::create(2024, 8, 25);
+        $endDate = Carbon::create(2024, 11, 5);
 
-        // Gán vai trò quản lý cho admin
-        $admin = DB::table('users')->where('email', 'admin@example.com')->first();
-        $quanLyRole = DB::table('roles')->where('name', 'quản lý')->first();
-        DB::table('model_has_roles')->insert([
-            'role_id' => $quanLyRole->id,
-            'model_type' => 'App\Models\User',
-            'model_id' => $admin->id,
-        ]);
+        // Create Admin User
+        $admin = User::updateOrCreate(
+            ['email' => 'admin@example.com'],
+            [
+                'name' => 'Admin',
+                'password' => Hash::make('password'),
+                'email_verified_at' => now(),
+            ]
+        );
 
-        // Seed KhachHang
+        // Assign role using Spatie method
+        $admin->assignRole('quản lý');
+
+        // Seed KhachHang (Customers)
         $khachHangIds = [];
         for ($i = 1; $i <= 50; $i++) {
-            $khachHangIds[] = DB::table('KhachHang')->insertGetId([
+            $khachHangId = DB::table('KhachHang')->insertGetId([
                 'TenKhachHang' => $faker->name,
                 'SoDienThoai' => $faker->unique()->numerify('0#########'),
                 'DiaChi' => $faker->address,
-                'DiemTichLuy' => $faker->numberBetween(0, 5000)
+                'DiemTichLuy' => $faker->numberBetween(0, 5000),
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
+            $khachHangIds[] = $khachHangId;
         }
 
-        // Seed NhanVien
+        // Seed NhanVien (Employees)
         $nhanVienIds = [];
         for ($i = 1; $i <= 20; $i++) {
-            $nhanVienIds[] = DB::table('NhanVien')->insertGetId([
+            $nhanVienId = DB::table('NhanVien')->insertGetId([
                 'HoTen' => $faker->name,
                 'NgaySinh' => $faker->dateTimeBetween('-40 years', '-20 years'),
                 'DiaChi' => $faker->address,
-                'SoDienThoai' => $faker->unique()->numerify('0#########')
+                'SoDienThoai' => $faker->unique()->numerify('0#########'),
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
+            $nhanVienIds[] = $nhanVienId;
         }
 
-        // Seed Thuoc
-        $nhomThuoc = [
-            'Kháng sinh' => ['Amoxicillin', 'Cephalexin', 'Azithromycin'],
-            'Giảm đau, hạ sốt' => ['Paracetamol', 'Ibuprofen', 'Aspirin'],
-            'Tim mạch' => ['Amlodipine', 'Losartan', 'Atenolol'],
-        ];
+        // Seed User for each NhanVien
+        foreach ($nhanVienIds as $nhanVienId) {
+            // Retrieve NhanVien details
+            $nhanVien = DB::table('NhanVien')->where('MaNhanVien', $nhanVienId)->first();
 
-        $hangSanXuat = [
-            'Công ty Dược Hậu Giang (DHG)',
-            'Công ty Dược Traphaco',
-            'Công ty Dược phẩm Imexpharm',
+            // Generate unique email based on name and ID
+            $email = strtolower(str_replace(' ', '.', $nhanVien->HoTen)) . $nhanVienId . '@example.com';
+
+            // Check if User already exists
+            $user = DB::table('users')->where('email', $email)->first();
+
+            if (!$user) {
+                // Create new User
+                $userId = DB::table('users')->insertGetId([
+                    'name' => $nhanVien->HoTen,
+                    'email' => $email,
+                    'password' => Hash::make('password'), // Default password
+                    'MaNhanVien' => $nhanVienId, // Link to NhanVien
+                    'email_verified_at' => now(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                // Assign 'nhân viên' role to User
+                $nhanVienRole = Role::where('name', 'nhân viên')->first();
+                DB::table('model_has_roles')->updateOrInsert(
+                    [
+                        'model_id' => $userId,
+                        'model_type' => 'App\Models\User',
+                    ],
+                    [
+                        'role_id' => $nhanVienRole->id,
+                    ]
+                );
+            }
+        }
+
+        // Seed other tables: Thuoc, HoaDon, ChiTietHoaDon, PhieuThu, NhaCungCap, PhieuNhap, BangLuong, ChiTietLuong...
+        // Example: Seed Thuoc (Medicines)
+        $nhomThuoc = [
+            'Kháng sinh' => ['Amoxicillin', 'Cephalexin', 'Azithromycin', 'Ciprofloxacin'],
+            'Giảm đau' => ['Paracetamol', 'Ibuprofen', 'Meloxicam', 'Diclofenac'],
+            'Tim mạch' => ['Amlodipine', 'Losartan', 'Bisoprolol', 'Aspirin'],
+            'Dạ dày' => ['Omeprazole', 'Pantoprazole', 'Famotidine', 'Metoclopramide'],
+            'Vitamin' => ['Vitamin C', 'Vitamin D3', 'Vitamin B Complex', 'Calcium']
         ];
 
         $thuocIds = [];
@@ -75,193 +119,110 @@ class DatabaseSeeder extends Seeder
                 $thuocIds[] = DB::table('Thuoc')->insertGetId([
                     'TenThuoc' => $tenThuoc,
                     'NhomLoaiThuoc' => $nhom,
-                    'HangSanXuat' => $faker->randomElement($hangSanXuat),
+                    'HangSanXuat' => $faker->randomElement(['DHG', 'Traphaco', 'Pymepharco', 'Imexpharm']),
                     'HanSuDung' => $faker->dateTimeBetween('+1 year', '+3 years'),
                     'SoLuong' => $faker->numberBetween(100, 1000),
-                    'Gia' => $faker->numberBetween(5000, 500000)
+                    'Gia' => $faker->randomElement([15000, 25000, 35000, 50000, 75000, 100000, 150000]),
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ]);
             }
         }
 
-        // Seed NhaCungCap
-        $nhaCungCapIds = [];
-        for ($i = 1; $i <= 15; $i++) {
-            $nhaCungCapIds[] = DB::table('NhaCungCap')->insertGetId([
-                'TenNhaCungCap' => $faker->company,
-                'DiaChi' => $faker->address,
-                'SoDienThoai' => $faker->unique()->numerify('0#########')
-            ]);
-        }
+        // Seed HoaDon (Invoices) and ChiTietHoaDon (Invoice Details)
+        for ($i = 1; $i <= 200; $i++) {
+            $ngayLap = $faker->dateTimeBetween($startDate, $endDate);
 
-        // Seed HoaDon và ChiTietHoaDon
-        $hoaDonIds = [];
-        for ($i = 1; $i <= 100; $i++) {
-            $hoaDonIds[] = $hoaDonId = DB::table('HoaDon')->insertGetId([
-                'NgayLap' => $faker->dateTimeBetween('-1 year', 'now'),
+            $hoaDonId = DB::table('HoaDon')->insertGetId([
+                'NgayLap' => $ngayLap,
                 'MaKhachHang' => $faker->randomElement($khachHangIds),
-                'MaNhanVien' => $faker->randomElement($nhanVienIds)
+                'MaNhanVien' => $faker->randomElement($nhanVienIds),
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
 
-            // Tạo 2-5 chi tiết hóa đơn cho mỗi hóa đơn
-            $usedThuocIds = [];
-            for ($j = 0; $j < $faker->numberBetween(2, 5); $j++) {
+            // 2-5 products per invoice
+            $soSanPham = $faker->numberBetween(2, 5);
+            $thuocDaChon = [];
+
+            for ($j = 0; $j < $soSanPham; $j++) {
                 $maThuoc = $faker->randomElement($thuocIds);
-                // Kiểm tra trùng lặp
-                if (!in_array($maThuoc, $usedThuocIds)) {
-                    $usedThuocIds[] = $maThuoc;
-                    $soLuong = $faker->numberBetween(1, 10);
-                    $gia = $faker->numberBetween(5000, 500000);
+                if (!in_array($maThuoc, $thuocDaChon)) {
+                    $thuocDaChon[] = $maThuoc;
+                    $soLuong = $faker->numberBetween(1, 5);
+                    $thuoc = DB::table('Thuoc')->where('MaThuoc', $maThuoc)->first();
+                    $thanhTien = $soLuong * $thuoc->Gia;
+
                     DB::table('ChiTietHoaDon')->insert([
                         'MaHoaDon' => $hoaDonId,
                         'MaThuoc' => $maThuoc,
                         'SoLuong' => $soLuong,
-                        'ThanhTien' => $soLuong * $gia
+                        'ThanhTien' => $thanhTien,
+                        'created_at' => now(),
+                        'updated_at' => now(),
                     ]);
                 }
             }
         }
 
+        // Seed PhieuThu (Receipts)
+        $hoaDons = DB::table('HoaDon')->get();
+        foreach ($hoaDons as $hoaDon) {
+            $tongTien = DB::table('ChiTietHoaDon')
+                ->where('MaHoaDon', $hoaDon->MaHoaDon)
+                ->sum('ThanhTien');
 
-
-        // Seed PhieuThu
-        foreach ($hoaDonIds as $hoaDonId) {
             DB::table('PhieuThu')->insert([
-                'MaHoaDon' => $hoaDonId,
-                'NgayLap' => $faker->dateTimeBetween('-1 year', 'now'),
-                'NguoiLap' => $faker->randomElement($nhanVienIds),
-                'SoTien' => $faker->numberBetween(50000, 5000000)
+                'MaHoaDon' => $hoaDon->MaHoaDon,
+                'NgayLap' => $hoaDon->NgayLap,
+                'NguoiLap' => DB::table('NhanVien')->where('MaNhanVien', $hoaDon->MaNhanVien)->value('HoTen'),
+                'SoTien' => $tongTien,
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
         }
 
-        // Seed PhieuNhap
-        for ($i = 1; $i <= 200; $i++) {
-            $maThuoc = $faker->randomElement($thuocIds);
-            $thuoc = DB::table('Thuoc')->where('MaThuoc', $maThuoc)->first();
-
-            DB::table('PhieuNhap')->insert([
-                'NgayNhap' => $faker->dateTimeBetween('-1 year', 'now'),
-                'MaThuoc' => $maThuoc,
-                'TenThuoc' => $thuoc->TenThuoc,
-                'SoLuong' => $faker->numberBetween(100, 1000),
-                'MaNhaCungCap' => $faker->randomElement($nhaCungCapIds)
-            ]);
-        }
-
-        // Seed BangLuong
-        $bangLuongIds = [];
+        // Seed BangLuong (Salary Sheets) and ChiTietLuong (Salary Details)
         foreach ($nhanVienIds as $nhanVienId) {
-            // 6 tháng lương cho mỗi nhân viên
-            for ($i = 1; $i <= 6; $i++) {
-                $luongCoBan = $faker->numberBetween(5000000, 10000000);
-                $thuongChuyenCan = $faker->numberBetween(500000, 2000000);
-                $thuongKPI = $faker->numberBetween(1000000, 5000000);
-                $soNgayNghi = $faker->numberBetween(0, 5);
-                $tongLuong = $luongCoBan + $thuongChuyenCan + $thuongKPI - ($soNgayNghi * 200000); // Trừ 200k mỗi ngày nghỉ
+            $currentDate = clone $startDate;
+            while ($currentDate <= $endDate) {
+                $luongCoBan = $faker->numberBetween(5000000, 8000000);
+                $thuongChuyenCan = $faker->numberBetween(500000, 1000000);
+                $thuongKPI = $faker->numberBetween(1000000, 2000000);
+                $soNgayNghi = $faker->numberBetween(0, 3);
+                $tongLuong = $luongCoBan + $thuongChuyenCan + $thuongKPI - ($soNgayNghi * 200000);
 
-                $bangLuongIds[] = DB::table('BangLuong')->insertGetId([
+                $bangLuongId = DB::table('BangLuong')->insertGetId([
                     'MaNhanVien' => $nhanVienId,
-                    'Thang' => $faker->dateTimeBetween('-6 months', 'now'),
+                    'Thang' => $currentDate->format('Y-m-d'),
                     'LuongCoBan' => $luongCoBan,
                     'ThuongChuyenCan' => $thuongChuyenCan,
                     'ThuongKPI' => $thuongKPI,
                     'SoNgayNghi' => $soNgayNghi,
-                    'TongLuong' => $tongLuong
+                    'TongLuong' => $tongLuong,
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ]);
-            }
-        }
 
-        // Seed ChiTietLuong
-        $loaiPhuCap = [
-            'Phụ cấp ăn trưa' => [150000, 300000],
-            'Phụ cấp xăng xe' => [200000, 500000],
-            'Phụ cấp điện thoại' => [100000, 200000],
-            'Thưởng doanh số' => [500000, 2000000],
-            'Phụ cấp độc hại' => [300000, 800000],
-            'Phụ cấp trách nhiệm' => [400000, 1000000]
-        ];
+                // Salary Details
+                $phuCap = [
+                    'Phụ cấp ăn trưa' => [500000, 700000],
+                    'Phụ cấp xăng xe' => [300000, 500000],
+                    'Phụ cấp điện thoại' => [200000, 300000],
+                    'Thưởng doanh số' => [1000000, 2000000],
+                ];
 
-        foreach ($bangLuongIds as $bangLuongId) {
-            // 2-4 loại phụ cấp cho mỗi bảng lương
-            $selectedPhuCap = $faker->randomElements(array_keys($loaiPhuCap), $faker->numberBetween(2, 4));
+                foreach ($phuCap as $loai => $range) {
+                    DB::table('ChiTietLuong')->insert([
+                        'MaBangLuong' => $bangLuongId,
+                        'MoTa' => $loai,
+                        'SoTien' => $faker->numberBetween($range[0], $range[1]),
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
 
-            foreach ($selectedPhuCap as $loai) {
-                [$min, $max] = $loaiPhuCap[$loai];
-                DB::table('ChiTietLuong')->insert([
-                    'MaBangLuong' => $bangLuongId,
-                    'MoTa' => $loai,
-                    'SoTien' => $faker->numberBetween($min, $max)
-                ]);
-            }
-        }// Continue from previous code...
-
-        // Seed PhieuThu
-        foreach ($hoaDonIds as $hoaDonId) {
-            DB::table('PhieuThu')->insert([
-                'MaHoaDon' => $hoaDonId,
-                'NgayLap' => $faker->dateTimeBetween('-1 year', 'now'),
-                'NguoiLap' => $faker->randomElement($nhanVienIds),
-                'SoTien' => $faker->numberBetween(50000, 5000000)
-            ]);
-        }
-
-        // Seed PhieuNhap
-        for ($i = 1; $i <= 200; $i++) {
-            $maThuoc = $faker->randomElement($thuocIds);
-            $thuoc = DB::table('Thuoc')->where('MaThuoc', $maThuoc)->first();
-
-            DB::table('PhieuNhap')->insert([
-                'NgayNhap' => $faker->dateTimeBetween('-1 year', 'now'),
-                'MaThuoc' => $maThuoc,
-                'TenThuoc' => $thuoc->TenThuoc,
-                'SoLuong' => $faker->numberBetween(100, 1000),
-                'MaNhaCungCap' => $faker->randomElement($nhaCungCapIds)
-            ]);
-        }
-
-        // Seed BangLuong
-        $bangLuongIds = [];
-        foreach ($nhanVienIds as $nhanVienId) {
-            // 6 tháng lương cho mỗi nhân viên
-            for ($i = 1; $i <= 6; $i++) {
-                $luongCoBan = $faker->numberBetween(5000000, 10000000);
-                $thuongChuyenCan = $faker->numberBetween(500000, 2000000);
-                $thuongKPI = $faker->numberBetween(1000000, 5000000);
-                $soNgayNghi = $faker->numberBetween(0, 5);
-                $tongLuong = $luongCoBan + $thuongChuyenCan + $thuongKPI - ($soNgayNghi * 200000); // Trừ 200k mỗi ngày nghỉ
-
-                $bangLuongIds[] = DB::table('BangLuong')->insertGetId([
-                    'MaNhanVien' => $nhanVienId,
-                    'Thang' => $faker->dateTimeBetween('-6 months', 'now'),
-                    'LuongCoBan' => $luongCoBan,
-                    'ThuongChuyenCan' => $thuongChuyenCan,
-                    'ThuongKPI' => $thuongKPI,
-                    'SoNgayNghi' => $soNgayNghi,
-                    'TongLuong' => $tongLuong
-                ]);
-            }
-        }
-
-        // Seed ChiTietLuong
-        $loaiPhuCap = [
-            'Phụ cấp ăn trưa' => [150000, 300000],
-            'Phụ cấp xăng xe' => [200000, 500000],
-            'Phụ cấp điện thoại' => [100000, 200000],
-            'Thưởng doanh số' => [500000, 2000000],
-            'Phụ cấp độc hại' => [300000, 800000],
-            'Phụ cấp trách nhiệm' => [400000, 1000000]
-        ];
-
-        foreach ($bangLuongIds as $bangLuongId) {
-            // 2-4 loại phụ cấp cho mỗi bảng lương
-            $selectedPhuCap = $faker->randomElements(array_keys($loaiPhuCap), $faker->numberBetween(2, 4));
-
-            foreach ($selectedPhuCap as $loai) {
-                [$min, $max] = $loaiPhuCap[$loai];
-                DB::table('ChiTietLuong')->insert([
-                    'MaBangLuong' => $bangLuongId,
-                    'MoTa' => $loai,
-                    'SoTien' => $faker->numberBetween($min, $max)
-                ]);
+                $currentDate->addMonth();
             }
         }
     }

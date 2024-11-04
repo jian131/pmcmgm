@@ -18,6 +18,7 @@ class CreateBangluongTable extends Migration
             $table->integer('SoNgayNghi')->nullable();
             $table->decimal('TongLuong', 10, 2);
             $table->foreign('MaNhanVien')->references('MaNhanVien')->on('NhanVien')->onDelete('cascade');
+            $table->timestamps();
         });
     }
 

@@ -7,15 +7,10 @@ use Illuminate\Http\Request;
 
 class KhachHangController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware(['auth', 'role:quản lý']);
-    }
-
     public function index()
     {
-        $khachHang = KhachHang::all();
-        return view('khachhang.index', compact('khachHang'));
+        $khachHangs = KhachHang::all();
+        return view('khachhang.index', compact('khachHangs'));
     }
 
     public function create()
@@ -26,14 +21,15 @@ class KhachHangController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'TenKhachHang' => 'required|string|max:100',
-            'SoDienThoai' => 'nullable|string|max:15',
-            'DiaChi' => 'nullable|string|max:255',
+            'TenKhachHang' => 'required|string|max:255',
+            'SoDienThoai' => 'required|unique:KhachHang,SoDienThoai',
+            'DiaChi' => 'required|string',
+            'DiemTichLuy' => 'required|integer|min:0',
         ]);
 
         KhachHang::create($request->all());
 
-        return redirect()->route('khachhang.index')->with('success', 'Thêm khách hàng thành công.');
+        return redirect()->route('khachhang.index')->with('success', 'Khách hàng được tạo thành công.');
     }
 
     public function show(KhachHang $khachHang)
@@ -49,19 +45,20 @@ class KhachHangController extends Controller
     public function update(Request $request, KhachHang $khachHang)
     {
         $request->validate([
-            'TenKhachHang' => 'required|string|max:100',
-            'SoDienThoai' => 'nullable|string|max:15',
-            'DiaChi' => 'nullable|string|max:255',
+            'TenKhachHang' => 'required|string|max:255',
+            'SoDienThoai' => 'required|unique:KhachHang,SoDienThoai,' . $khachHang->MaKhachHang . ',MaKhachHang',
+            'DiaChi' => 'required|string',
+            'DiemTichLuy' => 'required|integer|min:0',
         ]);
 
         $khachHang->update($request->all());
 
-        return redirect()->route('khachhang.index')->with('success', 'Cập nhật khách hàng thành công.');
+        return redirect()->route('khachhang.index')->with('success', 'Khách hàng được cập nhật thành công.');
     }
 
     public function destroy(KhachHang $khachHang)
     {
         $khachHang->delete();
-        return redirect()->route('khachhang.index')->with('success', 'Xóa khách hàng thành công.');
+        return redirect()->route('khachhang.index')->with('success', 'Khách hàng được xóa thành công.');
     }
 }

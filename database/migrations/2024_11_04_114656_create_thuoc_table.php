@@ -16,6 +16,7 @@ class CreateThuocTable extends Migration
             $table->date('HanSuDung')->nullable();
             $table->integer('SoLuong')->nullable();
             $table->decimal('Gia', 10, 2)->nullable();
+            $table->timestamps();
         });
     }
 
